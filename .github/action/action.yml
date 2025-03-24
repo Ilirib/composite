@@ -1,0 +1,45 @@
+name: Mirror Docs to Centralized Documentation
+description: Composite action to mirror docs from a source repository to a centralized Documentation repository.
+inputs:
+  documentation_repository:
+    description: 'Documentation repository in the format owner/repo' 
+    required: true
+  documentation_pat:
+    description: 'Personal Access Token with repo access'
+    required: true
+  source_directory:
+    description: 'Name of the source repository/directory to use (e.g. Infrastructure)'
+    required: true
+    default: 'Other'
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout Source Repository
+      uses: actions/checkout@v4
+      with:
+        path: main
+
+    - name: Checkout Documentation Repository
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.documentation_repository }}
+        token: ${{ inputs.documentation_pat }}
+        path: Documentation
+
+    - name: Copy docs to Documentation Repository 
+      shell: bash
+      run: |
+        mkdir -p Documentation/docs/${{ inputs.source_directory }}
+        rsync -av --delete docs/ Documentation/docs/${{ inputs.source_directory }}/
+      
+
+    - name: Commit and push changes 
+      shell: bash
+      run: |
+        cd Documentation
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add -A
+        git diff-index --quiet HEAD || git commit -m "Docs changed in ${{ inputs.source_directory }}"
+        git push 
+      
