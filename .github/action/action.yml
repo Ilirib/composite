@@ -30,7 +30,7 @@ runs:
       shell: bash
       run: |
         mkdir -p Documentation/docs/${{ inputs.source_directory }}
-        rsync -av --delete docs/ Documentation/docs/${{ inputs.source_directory }}/
+        rsync -av --delete docs/docs/ Documentation/docs/${{ inputs.source_directory }}/
       
 
     - name: Commit and push changes 
