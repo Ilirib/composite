@@ -15,7 +15,7 @@ inputs:
     required: true
   documentation_checkout_path:
     description: 'Directory path where the documentation repository will be checked out'
-    required: false
+    required: true
     default: 'documentation-temp'
 runs:
   using: "composite"
@@ -36,14 +36,14 @@ runs:
       shell: bash
       run: |
         mkdir -p ${{ inputs.documentation_checkout_path }}/docs/${{ inputs.source_directory }}
-        rsync -av --delete ${{ inputs.target_directory }}/ ${{ inputs.documentation_checkout_path }}/docs/${{ inputs.source_directory }}/
+        rsync -av --delete ${{ inputs.target_directory }}/${{ inputs.documentation_checkout_path }}/docs/${{ inputs.source_directory }}/
       
     - name: Commit and push changes 
       shell: bash
       run: |
         cd ${{ inputs.documentation_checkout_path }}
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git config user.name ""${GITHUB_ACTOR}"
+        git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
         git add -A
-        git diff-index --quiet HEAD || git commit -m "Docs changed in ${{ inputs.source_directory }}"
-        git push 
+        RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+        git diff-index --quiet HEAD || git commit -m "Docs changed in ${{ inputs.source_directory }} by ${GITHUB_ACTOR}. Run details: ${RUN_URL}"
