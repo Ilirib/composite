@@ -36,7 +36,7 @@ runs:
       shell: bash
       run: |
         mkdir -p ${{ inputs.documentation_checkout_path }}/docs/${{ inputs.source_directory }}
-        rsync -av --delete ${{ inputs.target_directory }} /${{ inputs.documentation_checkout_path }}/docs/${{ inputs.source_directory }}/
+        rsync -av --delete ${{ inputs.target_directory }}/ ${{ inputs.documentation_checkout_path }}/docs/${{ inputs.source_directory }}/
       
     - name: Commit and push changes 
       shell: bash
