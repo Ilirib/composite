@@ -10,11 +10,13 @@ inputs:
   source_directory:
     description: 'Name of the target directory in the Documentation repository (e.g. Infrastructure)'
     required: true
-    default: 'Other'
-  docs_directory:
+  target_directory:
     description: 'Path to the docs directory to mirror from'
     required: true
-    default: 'docs/docs'
+  documentation_checkout_path:
+    description: 'Directory path where the documentation repository will be checked out'
+    required: false
+    default: 'documentation-temp'
 runs:
   using: "composite"
   steps:
@@ -28,18 +30,18 @@ runs:
       with:
         repository: ${{ inputs.documentation_repository }}
         token: ${{ inputs.documentation_pat }}
-        path: Documentation
+        path: ${{ inputs.documentation_checkout_path }}
 
     - name: Copy docs to Documentation Repository 
       shell: bash
       run: |
-        mkdir -p Documentation/docs/${{ inputs.source_directory }}
-        rsync -av --delete ${{ inputs.docs_directory }}/ Documentation/docs/${{ inputs.source_directory }}/
+        mkdir -p ${{ inputs.documentation_checkout_path }}/docs/${{ inputs.source_directory }}
+        rsync -av --delete ${{ inputs.target_directory }}/ ${{ inputs.documentation_checkout_path }}/docs/${{ inputs.source_directory }}/
       
     - name: Commit and push changes 
       shell: bash
       run: |
-        cd Documentation
+        cd ${{ inputs.documentation_checkout_path }}
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git add -A
