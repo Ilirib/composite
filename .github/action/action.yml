@@ -7,10 +7,10 @@ inputs:
   documentation_pat:
     description: 'Personal Access Token with repo access'
     required: true
-  source_directory:
+  target_directory:
     description: 'Name of the target directory in the Documentation repository (e.g. Infrastructure)'
     required: true
-  target_directory:
+  source_directory:
     description: 'Path to the docs directory to mirror from'
     required: true
   documentation_checkout_path:
@@ -35,8 +35,8 @@ runs:
     - name: Copy docs to Documentation Repository 
       shell: bash
       run: |
-        mkdir -p ${{ inputs.documentation_checkout_path }}/docs/${{ inputs.source_directory }}
-        rsync -av --delete ${{ inputs.target_directory }}/ ${{ inputs.documentation_checkout_path }}/docs/${{ inputs.source_directory }}/
+        mkdir -p ${{ inputs.documentation_checkout_path }}/docs/${{ inputs.target_directory }}
+        rsync -av --delete ${{ inputs.source_directory }}/ ${{ inputs.documentation_checkout_path }}/docs/${{ inputs.target_directory }}/
       
     - name: Commit and push changes 
       shell: bash
