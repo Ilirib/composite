@@ -40,11 +40,11 @@ runs:
       
     - name: Commit and push changes 
       shell: bash
+      working-directory: ${{ inputs.documentation_checkout_path }}
       run: |
-        cd ${{ inputs.documentation_checkout_path }}
-        git config user.name "${GITHUB_ACTOR}"
-        git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+        git config user.name "${{ github.actor }}"
+        git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+        
         git add -A
-        RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-        git diff-index --quiet HEAD || git commit -m "Docs changed in ${{ inputs.source_directory }} by ${GITHUB_ACTOR}. Run details: ${RUN_URL}"
+        git commit -m "Run details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         git push
