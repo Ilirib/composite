@@ -31,13 +31,6 @@ runs:
         curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v${{ inputs.trivy_version }}
         trivy --version
 
-    - name: Set up git credentials for plugin install
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      run: |
-        git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
-
     - name: Install Trivy SonarQube plugin
       shell: bash
       run: trivy plugin install github.com/aquasecurity/trivy-plugin-sonarqube
