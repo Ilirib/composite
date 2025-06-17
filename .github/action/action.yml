@@ -18,12 +18,12 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Ensure git is installed
-      shell: bash
-      run: |
-        if ! command -v git &> /dev/null; then
-          sudo apt-get update && sudo apt-get install -y git
-        fi
+    # - name: Ensure git is installed
+    #   shell: bash
+    #   run: |
+    #     if ! command -v git &> /dev/null; then
+    #       sudo apt-get update && sudo apt-get install -y git
+    #     fi
 
     - name: Install Trivy
       shell: bash
@@ -31,9 +31,9 @@ runs:
         curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v${{ inputs.trivy_version }}
         trivy --version
 
-    - name: Install Trivy SonarQube plugin
-      shell: bash
-      run: trivy plugin install github.com/aquasecurity/trivy-plugin-sonarqube
+    # - name: Install Trivy SonarQube plugin
+    #   shell: bash
+    #   run: trivy plugin install github.com/aquasecurity/trivy-plugin-sonarqube
 
     - name: Trivy vulnerability and license scan (JSON)
       shell: bash
@@ -44,6 +44,6 @@ runs:
           trivy fs --scanners vuln,license --format=json --output=trivy.json "${{ inputs.scan_ref }}"
         fi
 
-    - name: Convert Trivy JSON to SonarQube format
-      shell: bash
-      run: trivy sonarqube trivy.json > trivy-sonarqube.json
+    # - name: Convert Trivy JSON to SonarQube format
+    #   shell: bash
+    #   run: trivy sonarqube trivy.json > trivy-sonarqube.json
