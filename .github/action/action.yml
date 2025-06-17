@@ -1,50 +1,42 @@
-name: Mirror Docs to Centralized Documentation
-description: Composite action to mirror docs from a source repository to a centralized Documentation repository.
+name: Trivy SonarQube Scan
+description: Composite action to scan for vulnerabilities and licenses, output SonarQube JSON.
+
 inputs:
-  documentation_repository:
-    description: 'Documentation repository in the format owner/repo'
+  scan_type:
+    description: 'Scan type: image or fs'
     required: true
-  documentation_pat:
-    description: 'Personal Access Token with repo access'
+    default: 'fs'
+  scan_ref:
+    description: 'Path or image reference to scan'
     required: true
-  target_directory:
-    description: 'Name of the target directory in the Documentation repository (e.g. Infrastructure)'
-    required: true
-  source_directory:
-    description: 'Path to the docs directory to mirror from'
-    required: true
-  documentation_checkout_path:
-    description: 'Directory path where the documentation repository will be checked out'
-    required: true
-    default: 'documentation-temp'
+    default: '.'
+  trivy_version:
+    description: 'Trivy version to install'
+    required: false
+    default: '0.63.0'
+
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
-    - name: Checkout Source Repository
-      uses: actions/checkout@v4
-      with:
-        path: main
-
-    - name: Checkout Documentation Repository
-      uses: actions/checkout@v4
-      with:
-        repository: ${{ inputs.documentation_repository }}
-        token: ${{ inputs.documentation_pat }}
-        path: ${{ inputs.documentation_checkout_path }}
-
-    - name: Copy docs to Documentation Repository 
+    - name: Install Trivy
       shell: bash
       run: |
-        mkdir -p ${{ inputs.documentation_checkout_path }}/docs/${{ inputs.target_directory }}
-        rsync -av --delete ${{ inputs.source_directory }}/ ${{ inputs.documentation_checkout_path }}/docs/${{ inputs.target_directory }}/
-      
-    - name: Commit and push changes 
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v${{ inputs.trivy_version }}
+        trivy --version
+
+    - name: Install Trivy SonarQube plugin
       shell: bash
-      working-directory: ${{ inputs.documentation_checkout_path }}
+      run: trivy plugin install github.com/aquasecurity/trivy-plugin-sonarqube
+
+    - name: Trivy vulnerability and license scan (JSON)
+      shell: bash
       run: |
-        git config user.name "${{ github.actor }}"
-        git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
-        
-        git add -A
-        git commit -m "Run details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-        git push
+        if [ "${{ inputs.scan_type }}" = "image" ]; then
+          trivy image --scanners vuln,license --format=json --output=trivy.json "${{ inputs.scan_ref }}"
+        else
+          trivy fs --scanners vuln,license --format=json --output=trivy.json "${{ inputs.scan_ref }}"
+        fi
+
+    - name: Convert Trivy JSON to SonarQube format
+      shell: bash
+      run: trivy sonarqube trivy.json > trivy-sonarqube.json
